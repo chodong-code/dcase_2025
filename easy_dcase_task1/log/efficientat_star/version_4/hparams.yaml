@@ -1,0 +1,15 @@
+data_augmentation:
+  mix_up:
+    class_path: util.MixUp
+    init_args:
+      alpha: 0.3
+  mix_style: null
+  dir_aug: null
+  spec_aug:
+    class_path: util.SpecAugmentation
+    init_args:
+      mask_size: 0.2
+      p: 0.5
+class_label: scene
+domain_label: device
+_instantiator: lightning.pytorch.cli.instantiate_module

@@ -1,0 +1,146 @@
+# lightning.pytorch==2.5.1.post0
+seed_everything: 0
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: null
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: log
+      name: efficientat_star
+      version: null
+      log_graph: false
+      default_hp_metric: true
+      prefix: ''
+      sub_dir: null
+      comment: ''
+      purge_step: null
+      max_queue: 10
+      flush_secs: 120
+      filename_suffix: ''
+  callbacks:
+  - class_path: util.OverrideEpochStepCallback
+  - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+    init_args:
+      logging_interval: epoch
+      log_momentum: false
+      log_weight_decay: false
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      dirpath: null
+      filename: '{epoch}-{val_acc:.4f}'
+      monitor: val_acc
+      verbose: false
+      save_last: null
+      save_top_k: 1
+      save_weights_only: true
+      mode: max
+      auto_insert_metric_name: true
+      every_n_train_steps: null
+      train_time_interval: null
+      every_n_epochs: null
+      save_on_train_epoch_end: null
+      enable_version_counter: true
+  fast_dev_run: false
+  max_epochs: 60
+  min_epochs: null
+  max_steps: -1
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: null
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: null
+  log_every_n_steps: null
+  enable_checkpointing: null
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 1
+  gradient_clip_val: null
+  gradient_clip_algorithm: null
+  deterministic: null
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: null
+  model_registry: null
+model:
+  class_path: model.lit_asc.LitAcousticSceneClassificationSystem
+  init_args:
+    backbone:
+      class_path: model.backbones.PretrainedMN40
+      init_args:
+        pretrained: /home/work/LDH/mn40_as_ext_mAP_487.pt
+        num_classes: 10
+    data_augmentation:
+      mix_up:
+        class_path: util.MixUp
+        init_args:
+          alpha: 0.3
+      mix_style: null
+      dir_aug: null
+      spec_aug:
+        class_path: util.SpecAugmentation
+        init_args:
+          mask_size: 0.2
+          p: 1.0
+    class_label: scene
+    domain_label: device
+    spec_extractor:
+      class_path: util.AugmentMelSTFT
+      init_args:
+        n_mels: 128
+        sr: 32000
+        win_length: 800
+        hopsize: 320
+        n_fft: 1024
+        freqm: 48
+        timem: 192
+        fmin: 0.0
+        fmax: None
+        fmin_aug_range: 10
+        fmax_aug_range: 2000
+data:
+  class_path: data.data_module.DCASEDataModule
+  init_args:
+    meta_dir: /home/work/LDH/easy_dcase_task1/data/meta_dcase_2024
+    audio_dir: /home/work/dcase2025/TAU-urban-acoustic-scenes-2022-mobile-development
+    batch_size: 256
+    num_workers: 4
+    pin_memory: true
+    logits_files: null
+    train_subset: split5
+    test_subset: test
+    predict_subset: test
+    sampling_rate: 32000
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    lr: 0.001
+    betas:
+    - 0.9
+    - 0.999
+    eps: 1.0e-08
+    weight_decay: 0.0
+    amsgrad: false
+    foreach: null
+    maximize: false
+    capturable: false
+    differentiable: false
+    fused: null
+    decoupled_weight_decay: false
+lr_scheduler: null
+ckpt_path: null

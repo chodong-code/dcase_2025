@@ -1,0 +1,75 @@
+trainer:
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: log
+      name: fpasst_star
+  callbacks:
+    - class_path: util.OverrideEpochStepCallback
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: epoch
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        save_top_k: 1
+        monitor: val_acc
+        mode: max
+        filename: '{epoch}-{val_acc:.4f}'
+        save_weights_only: True
+  max_epochs: 100
+
+ckpt_path: null
+
+model:
+  class_path: model.lit_asc.LitAcousticSceneClassificationSystem
+  init_args:
+    backbone:
+      class_path: model.backbones.PretrainedFPASST
+      init_args:
+        arch: passt_s_kd_p16_128_ap486
+        num_classes: 10
+        input_tdim: 250
+        input_fdim: 256
+        pos_embed_length: 250
+    data_augmentation:
+      mix_up:
+        class_path: util.MixUp
+        init_args:
+          alpha: 0.3
+      mix_style: null
+      dir_aug: null
+      spec_aug: null
+    class_label: scene
+    domain_label: device
+    spec_extractor:
+      class_path: util.spec_extractor.pAugmentMelSTFT
+      init_args:
+        n_mels: 256      # 128 → 256
+        sr: 32000
+        win_length: 256          # 그대로 두고
+        hopsize: 32              # 그대로 두면 1초에 약 1000프레임 생성
+        n_fft: 256
+        freqm: 64
+        timem: 256
+        fmin: 0
+        fmax: null
+        fmin_aug_range: 10
+        fmax_aug_range: 
+
+data:
+  class_path: data.data_module.DCASEDataModule
+  init_args:
+  init_args:
+    meta_dir: /home/work/LDH/easy_dcase_task1/data/meta_dcase_2024
+    audio_dir: /home/work/dcase2025/TAU-urban-acoustic-scenes-2022-mobile-development
+    batch_size: 64
+    num_workers: 12
+    pin_memory: true
+    sampling_rate: 32000
+    train_subset: split5
+
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    lr: 0.0001
+    weight_decay: 0.0                                                                                                       
